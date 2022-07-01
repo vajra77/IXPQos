@@ -85,15 +85,15 @@ class Target:
                    jdata['address'])
 
 # APP FUNCTIONS
-def ping_target(target):
-    target.ping(10,50)
+def ping_target(target, count, delay):
+    target.ping(count, delay)
 
-def load_targets_from_collector(collector):
+def load_targets_from_server(server):
     pass
 
-def load_targets_from_file(target_file):
+def load_targets_from_file(local_file):
     result = []
-    with open(target_file) as f:
+    with open(local_file) as f:
         data = json.load(f)
         for t in data['targets']:
             result.append(Target.make_from_json(t))
@@ -101,35 +101,43 @@ def load_targets_from_file(target_file):
     return result
 
 def usage():
-    print("Usage: xprobe [-c <collector_address> | -t <target_file>]")
+    print("Usage: xprobe [-r address | -l file] [-d delay] [-c count]")
 
 def main():
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "c:t:", ["collector=", "target="])
+        opts, args = getopt.getopt(sys.argv[1:], "r:l:c:d:", ["remote=", "local=", "count=", "delay="])
 
-        (collector, target_file) = (None, None)
-
+        (remote, local) = (None, None)
+        count = 10
+        delay = 50.0
         for o, a in opts:
-            if o in ("-c", "--collector"):
-                collector = a
-            elif o in ("-t", "--target"):
-                target_file = a
+            if o in ("-c", "--count"):
+                count = int(a)
+            elif o in ("-l", "--local"):
+                local = a
+            elif o in ("-d", "--delay"):
+                delay = float(a)
+            elif o in ("-r", "--remote"):
+                remote = a
             else:
-                assert False, "unhandled option"
+                assert False, "unrecognized option"
 
-    except getopt.GetoptError as err:
+        if not local and not remote:
+            assert False, "no remote address nor local file specified"
+
+    except Exception as err:
         print(err)
         usage()
         sys.exit(2)
 
-    if target_file:
-        targets = load_targets_from_file(target_file)
+    if local:
+        targets = load_targets_from_file(local)
     else:
-        targets = load_targets_from_collector(collector)
+        targets = load_targets_from_server(remote)
 
     threads = []
     for t in targets:
-        th = threading.Thread(target=ping_target, args=(t,))
+        th = threading.Thread(target=ping_target, args=(t,count,delay,))
         threads.append(th)
         th.start()
 
@@ -138,7 +146,7 @@ def main():
 
     for t in targets:
         if t.pinged:
-            print(f"Ping result [{t.address}]: {t.ping_min:.3f}ms/{t.ping_max:.3f}ms/{t.ping_avg:.3f}ms (min/max/avg) loss: {t.ping_loss:.2f}%")
+            print(f"Ping result [{t.address}]: {t.ping_min:.3f}ms/{t.ping_max:.3f}ms/{t.ping_avg:.3f}ms (min/max/avg) loss: {t.ping_loss:.1f}%")
 
 if __name__ == '__main__':
     main()
