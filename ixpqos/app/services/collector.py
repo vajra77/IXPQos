@@ -1,5 +1,5 @@
 from ixpqos.app import APP_CONFIG
-from ixpqos.lib import ProbedTarget, InfluxDB
+from ixpqos.core import ProbedTarget, InfluxDB
 from datetime import datetime
 import json
 

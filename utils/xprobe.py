@@ -106,7 +106,7 @@ def load_targets_from_server(remote):
     return result
 
 def usage():
-    print("Usage: xprobe -n name [-k key] [-r address] [-d delay] [-c count]")
+    print("Usage: utils -n name [-k key] [-r address] [-d delay] [-c count]")
 
 def main():
     try:
@@ -133,7 +133,7 @@ def main():
             assert False, "no remote ixpqos address specified"
 
         if not name:
-            assert False, "mandatory xprobe name missing"
+            assert False, "mandatory utils name missing"
 
     except Exception as err:
         print(err)
