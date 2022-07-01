@@ -159,7 +159,8 @@ def main():
     if response.status_code == 200:
         exit(0)
     else:
-        print(f"ERROR: {response}", file=sys.stderr)
+        data = response.json()
+        print(f"ERROR: {data['error']}", file=sys.stderr)
         exit(1)
 
 if __name__ == '__main__':
