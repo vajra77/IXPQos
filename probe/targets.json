@@ -1,0 +1,14 @@
+{
+  "targets": [
+    {
+      "name": "google dns",
+      "proto": 4,
+      "address": "8.8.8.8"
+    },
+    {
+      "name": "CF quad9",
+      "proto": 4,
+      "address": "9.9.9.9"
+    }
+  ]
+}
