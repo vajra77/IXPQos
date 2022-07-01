@@ -1,8 +1,4 @@
-import getopt
-import sys
-import json
-import threading
-import time
+import requests, json, threading, time, sys, getopt
 from ping3 import ping
 
 
@@ -88,8 +84,13 @@ class Target:
 def ping_target(target, count, delay):
     target.ping(count, delay)
 
-def load_targets_from_server(server):
-    pass
+def load_targets_from_server(remote):
+    result = []
+    url = requests.get(f"http://{remote}:5000/api/v1/collector/targets")
+    data = json.loads(url.text)
+    for t in data['targets']:
+        result.append(Target.make_from_json(t))
+    return result
 
 def load_targets_from_file(local_file):
     result = []
