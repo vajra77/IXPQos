@@ -74,6 +74,19 @@ class Target:
         self._ping_loss = packet_loss
         self._pinged = True
 
+    def to_dict(self):
+        result = {
+            "name": self._name,
+            "proto": self._proto,
+            "address": self._address,
+            "pinged": self._pinged,
+            "ping_min": self._ping_min,
+            "ping_max": self._ping_max,
+            "ping_avg": self._ping_avg,
+            "ping_loss": self._ping_loss
+        }
+        return result
+
     @classmethod
     def make_from_json(cls, jdata):
         return cls(jdata['name'],
@@ -86,68 +99,68 @@ def ping_target(target, count, delay):
 
 def load_targets_from_server(remote):
     result = []
-    url = requests.get(f"http://{remote}:5000/api/v1/collector/targets")
+    url = requests.get(f"http://{remote}:5000/api/v1/ixpqos/targets")
     data = json.loads(url.text)
     for t in data['targets']:
         result.append(Target.make_from_json(t))
     return result
 
-def load_targets_from_file(local_file):
-    result = []
-    with open(local_file) as f:
-        data = json.load(f)
-        for t in data['targets']:
-            result.append(Target.make_from_json(t))
-        f.close()
-    return result
-
 def usage():
-    print("Usage: xprobe [-r address | -l file] [-d delay] [-c count]")
+    print("Usage: xprobe -n name [-k key] [-r address] [-d delay] [-c count]")
 
 def main():
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "r:l:c:d:", ["remote=", "local=", "count=", "delay="])
+        opts, args = getopt.getopt(sys.argv[1:], "k:n:r:c:d:", ["key=", "name=", "remote=", "count=", "delay="])
 
-        (remote, local) = (None, None)
+        (key, name, remote) = (None, None, None)
         count = 10
         delay = 50.0
         for o, a in opts:
             if o in ("-c", "--count"):
                 count = int(a)
-            elif o in ("-l", "--local"):
-                local = a
             elif o in ("-d", "--delay"):
                 delay = float(a)
             elif o in ("-r", "--remote"):
                 remote = a
+            elif o in ("-n", "--name"):
+                name = a
+            elif o in ("-k", "--key"):
+                key = a
             else:
                 assert False, "unrecognized option"
 
-        if not local and not remote:
-            assert False, "no remote address nor local file specified"
+        if not remote:
+            assert False, "no remote ixpqos address specified"
+
+        if not name:
+            assert False, "mandatory xprobe name missing"
 
     except Exception as err:
         print(err)
         usage()
         sys.exit(2)
 
-    if local:
-        targets = load_targets_from_file(local)
-    else:
-        targets = load_targets_from_server(remote)
-
+    targets = load_targets_from_server(remote)
     threads = []
     for t in targets:
-        th = threading.Thread(target=ping_target, args=(t,count,delay,))
-        threads.append(th)
-        th.start()
+        if name != t.name:
+            th = threading.Thread(target=ping_target, args=(t,count,delay,))
+            threads.append(th)
+            th.start()
 
     for th in threads:
         th.join()
 
-    for t in targets:
-        if t.pinged:
-            print(f"Ping result [{t.address}]: {t.ping_min:.3f}ms/{t.ping_max:.3f}ms/{t.ping_avg:.3f}ms (min/max/avg) loss: {t.ping_loss:.1f}%")
+    jresult = {
+        "source": name,
+        "targets": [t.to_dict() for t in targets]
+    }
+    response = requests.post(f"http://{remote}:5000/api/v1/ixpqos/result", json=jresult)
+    if response.status_code == 200:
+        exit(0)
+    else:
+        print(f"ERROR: {response}", file=sys.stderr)
+        exit(1)
 
 if __name__ == '__main__':
     main()

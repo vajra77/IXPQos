@@ -1,5 +1,5 @@
 from flask import Blueprint
-from app.logger import Logger
+from ixpqos.app.logger import Logger
 
 api = Blueprint('api', __name__)
 

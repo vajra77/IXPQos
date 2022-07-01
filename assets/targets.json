@@ -1,14 +1,19 @@
 {
   "targets": [
     {
-      "name": "google dns",
+      "name": "rom1-ixpqos",
       "proto": 4,
       "address": "8.8.8.8"
     },
     {
-      "name": "CF quad9",
+      "name": "rom2-ixpqos",
       "proto": 4,
       "address": "9.9.9.9"
+    },
+    {
+      "name": "rom3-ixpqos",
+      "proto": 4,
+      "address": "193.201.40.10"
     }
   ]
 }
