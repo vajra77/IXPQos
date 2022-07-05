@@ -151,10 +151,16 @@ def main():
     for th in threads:
         th.join()
 
+    jtargets = []
+    for t in targets:
+        if name != t.name:
+            jtargets.append(t.to_dict())
+
     jresult = {
         "source": name,
-        "targets": [t.to_dict() for t in targets]
+        "targets": jtargets
     }
+
     response = requests.post(f"http://{remote}:5000/api/v1/ixpqos/result", json=jresult)
     if response.status_code == 200:
         exit(0)
