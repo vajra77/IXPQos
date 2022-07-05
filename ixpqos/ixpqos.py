@@ -1,3 +1,4 @@
-from app import create_app
+from ixpqos.app import create_app
+
 
 app = create_app('default')
