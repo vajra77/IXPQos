@@ -2,7 +2,7 @@ from .probed_target import ProbedTarget
 from influxdb import InfluxDBClient
 
 
-class InfluxDB:
+class InfluxRepo:
 
     def __init__(self, hostname, port, dbname):
         self._client = InfluxDBClient(hostname, port)
@@ -16,7 +16,7 @@ class InfluxDB:
                 "target": target.name,
                 "status": target.status
             },
-            "time": target.timestamp,
+            "time": target.timestamp.strftime('%Y-%m-%dT%H:%M:%SZ'),
             "fields": {
                 "min": target.ping_min,
                 "max": target.ping_max,
@@ -24,7 +24,7 @@ class InfluxDB:
                 "loss": target.ping_loss
             }
         }
-        self._client.write(data=jpoint, protocol='json')
+        self._client.write_points([jpoint])
 
     def close(self):
         pass

@@ -1,5 +1,5 @@
 from ixpqos.app import APP_CONFIG
-from ixpqos.core import ProbedTarget, InfluxDB
+from ixpqos.core import ProbedTarget, InfluxRepo
 from datetime import datetime
 import json
 
@@ -15,8 +15,8 @@ class CollectorSrv:
 
     @classmethod
     def store_result(cls, source, targets):
-        timestamp = datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ')
-        db = InfluxDB(APP_CONFIG['dbhost'],
+        timestamp = datetime.now()
+        db = InfluxRepo(APP_CONFIG['dbhost'],
                       APP_CONFIG['dbport'],
                       APP_CONFIG['dbname'])
         for t in targets:
