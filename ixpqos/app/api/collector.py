@@ -4,7 +4,7 @@ from ixpqos.app.services import CollectorSrv as SRV
 from flask import jsonify, request
 
 
-@api.route('/ixpqos/targets', methods=['GET'])
+@api.route('/targets', methods=['GET'])
 #@api_auth_read
 def API_list_targets():
     try:
@@ -16,7 +16,7 @@ def API_list_targets():
         return jsonify({ 'targets': [t for t in targets] }), 200
 
 
-@api.route('/ixpqos/result', methods=['POST'])
+@api.route('/result', methods=['POST'])
 #@api_auth_write
 def API_store_result():
     try:
