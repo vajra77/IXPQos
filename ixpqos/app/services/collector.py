@@ -18,7 +18,9 @@ class CollectorSrv:
         timestamp = datetime.now()
         db = InfluxRepo(APP_CONFIG['dbhost'],
                       APP_CONFIG['dbport'],
-                      APP_CONFIG['dbname'])
+                      APP_CONFIG['dbname'],
+                        APP_CONFIG['dbuser'],
+                        APP_CONFIG['dbpass'])
         for t in targets:
             probed_target = ProbedTarget(
                 t['name'],

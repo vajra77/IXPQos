@@ -99,7 +99,7 @@ def ping_target(target, count, delay):
 
 def load_targets_from_server(remote):
     result = []
-    url = requests.get(f"http://{remote}:5000/api/v1/ixpqos/targets")
+    url = requests.get(f"https://{remote}/api/v1/targets")
     data = json.loads(url.text)
     for t in data['targets']:
         result.append(Target.make_from_json(t))
@@ -161,7 +161,7 @@ def main():
         "targets": jtargets
     }
 
-    response = requests.post(f"http://{remote}:5000/api/v1/ixpqos/result", json=jresult)
+    response = requests.post(f"https://{remote}/api/v1/result", json=jresult)
     if response.status_code == 200:
         exit(0)
     else:
