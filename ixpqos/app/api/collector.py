@@ -1,5 +1,6 @@
 from ixpqos.app.api import api
 from ixpqos.app.logger import Logger
+from ixpqos.app.api.auth import api_auth
 from ixpqos.app.services import CollectorSrv as SRV
 from flask import jsonify, request
 
