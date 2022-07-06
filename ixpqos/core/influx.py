@@ -4,8 +4,8 @@ from influxdb import InfluxDBClient
 
 class InfluxRepo:
 
-    def __init__(self, hostname, port, dbname):
-        self._client = InfluxDBClient(hostname, port)
+    def __init__(self, hostname, port, dbname, dbuser, dbpass):
+        self._client = InfluxDBClient(hostname, port, dbuser, dbpass)
         self._client.switch_database(dbname)
 
     def store_point(self, source, target: ProbedTarget):

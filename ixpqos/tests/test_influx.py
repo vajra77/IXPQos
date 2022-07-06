@@ -2,7 +2,7 @@ from influxdb import InfluxDBClient
 
 
 def test_influx_write():
-    client = InfluxDBClient('sys.namex.it', 8086)
+    client = InfluxDBClient('qos.namex.it', 8086, 'ixpqos', '3ss3lt3')
     client.switch_database('ixpqos_devel')
     jpoint = {
         "measurement": "Test",
