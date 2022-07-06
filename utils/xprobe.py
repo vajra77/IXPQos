@@ -97,22 +97,23 @@ class Target:
 def ping_target(target, count, delay):
     target.ping(count, delay)
 
-def load_targets_from_server(remote):
+def load_targets_from_server(remote, api_key):
     result = []
-    url = requests.get(f"https://{remote}/api/v1/targets")
+    url = requests.get(f"https://{remote}/backend/api/v1/targets",
+                       headers = { "X-API-Key": api_key })
     data = json.loads(url.text)
     for t in data['targets']:
         result.append(Target.make_from_json(t))
     return result
 
 def usage():
-    print("Usage: utils -n name [-k key] [-r address] [-d delay] [-c count]")
+    print("Usage: utils -n name -k key -r address [-d delay] [-c count]")
 
 def main():
     try:
         opts, args = getopt.getopt(sys.argv[1:], "k:n:r:c:d:", ["key=", "name=", "remote=", "count=", "delay="])
 
-        (key, name, remote) = (None, None, None)
+        (key, name, remote) = ("", None, None)
         count = 10
         delay = 50.0
         for o, a in opts:
@@ -140,13 +141,13 @@ def main():
         usage()
         sys.exit(2)
 
-    targets = load_targets_from_server(remote)
+    targets = load_targets_from_server(remote, key)
     threads = []
     for t in targets:
-        if name != t.name:
-            th = threading.Thread(target=ping_target, args=(t,count,delay,))
-            threads.append(th)
-            th.start()
+         if name != t.name:
+             th = threading.Thread(target=ping_target, args=(t,count,delay,))
+             threads.append(th)
+             th.start()
 
     for th in threads:
         th.join()
@@ -161,8 +162,9 @@ def main():
         "targets": jtargets
     }
 
-
-    response = requests.post(f"https://{remote}/api/v1/result", json=jresult)
+    response = requests.post(f"https://{remote}/backend/api/v1/result",
+                             json=jresult,
+                             headers={ 'X-API-Key': key })
     if response.status_code == 200:
         exit(0)
     else:
