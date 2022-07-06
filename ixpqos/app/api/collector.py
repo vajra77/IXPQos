@@ -5,7 +5,7 @@ from flask import jsonify, request
 
 
 @api.route('/targets', methods=['GET'])
-#@api_auth_read
+@api_auth
 def API_list_targets():
     try:
         targets = SRV.list_targets()
@@ -17,7 +17,7 @@ def API_list_targets():
 
 
 @api.route('/result', methods=['POST'])
-#@api_auth_write
+@api_auth
 def API_store_result():
     try:
         data = request.json
