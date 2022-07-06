@@ -1,4 +1,4 @@
-from .probed_target import ProbedTarget
+from .probe_result import ProbeResult
 from influxdb import InfluxDBClient
 
 
@@ -8,20 +8,20 @@ class InfluxRepo:
         self._client = InfluxDBClient(hostname, port, dbuser, dbpass)
         self._client.switch_database(dbname)
 
-    def store_point(self, source, target: ProbedTarget):
+    def store_point(self, source, result: ProbeResult):
         jpoint = {
             "measurement": "Ping",
             "tags": {
                 "source": source,
-                "target": target.name,
-                "status": target.status
+                "target": result.name,
+                "status": result.status
             },
-            "time": target.timestamp.strftime('%Y-%m-%dT%H:%M:%SZ'),
+            "time": result.timestamp.strftime('%Y-%m-%dT%H:%M:%SZ'),
             "fields": {
-                "min": target.ping_min,
-                "max": target.ping_max,
-                "avg": target.ping_avg,
-                "loss": target.ping_loss
+                "min": result.ping_min,
+                "max": result.ping_max,
+                "avg": result.ping_avg,
+                "loss": result.ping_loss
             }
         }
         self._client.write_points([jpoint])

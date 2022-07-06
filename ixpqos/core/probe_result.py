@@ -1,6 +1,6 @@
 
 
-class ProbedTarget:
+class ProbeResult:
 
     def __init__(self, name, proto, address, status, min, max, avg, loss, timestamp):
         self._name = name

@@ -5,28 +5,39 @@ from ixpqos.app.services import CollectorSrv as SRV
 from flask import jsonify, request
 
 
-@api.route('/targets', methods=['GET'])
+@api.route('/conf/probes', methods=['GET'])
 @api_auth
-def API_list_targets():
+def API_list_probes():
     try:
-        targets = SRV.list_targets()
+        probes = SRV.list_probes()
     except Exception as e:
         Logger.crit(__name__ + ' : ' + str(e))
-        return jsonify({"error": "unable to retrieve list of targets"}), 404
+        return jsonify({"error": "unable to retrieve list of probes"}), 404
     else:
-        return jsonify({ 'targets': [t for t in targets] }), 200
+        return jsonify({ 'probes': [t for t in probes] }), 200
 
 
-@api.route('/result', methods=['POST'])
+@api.route('/data/probe-result', methods=['POST'])
 @api_auth
 def API_store_result():
     try:
         data = request.json
         source = data['source']
-        targets = data['targets']
-        SRV.store_result(source, targets)
+        probes = data['probes']
+        SRV.store_result(source, probes)
     except Exception as e:
         Logger.crit(__name__ + ' : ' + str(e))
-        return jsonify({"error": "unable to store ping result"}), 404
+        return jsonify({"error": "unable to store probe result"}), 500
     else:
         return jsonify({'status': 'ok'}), 200
+
+@api.route('/data/probe/:sid/last', methods=['GET'])
+@api_auth
+def API_get_last(tid):
+    try:
+        result = SRV.get_last(sid)
+    except Exception as e:
+        Logger.crit(__name__ + ' : ' + str(e))
+        return jsonify({"error": "unable to retrieve probe"}), 404
+    else:
+        return jsonify({ "result": result })

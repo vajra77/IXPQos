@@ -3,7 +3,7 @@ from ping3 import ping
 
 
 # Helper class
-class Target:
+class Probe:
 
     def __init__(self, name, proto, address):
         self._name = name
@@ -94,16 +94,16 @@ class Target:
                    jdata['address'])
 
 # APP FUNCTIONS
-def ping_target(target, count, delay):
-    target.ping(count, delay)
+def ping_probe(probe, count, delay):
+    probe.ping(count, delay)
 
-def load_targets_from_server(remote, api_key):
+def load_probes_from_server(remote, api_key):
     result = []
-    url = requests.get(f"https://{remote}/backend/api/v1/targets",
+    url = requests.get(f"https://{remote}/backend/api/v1/conf/probes",
                        headers = { "X-API-Key": api_key })
     data = json.loads(url.text)
-    for t in data['targets']:
-        result.append(Target.make_from_json(t))
+    for t in data['probes']:
+        result.append(Probe.make_from_json(t))
     return result
 
 def usage():
@@ -141,28 +141,28 @@ def main():
         usage()
         sys.exit(2)
 
-    targets = load_targets_from_server(remote, key)
+    probes = load_probes_from_server(remote, key)
     threads = []
-    for t in targets:
+    for t in probes:
          if name != t.name:
-             th = threading.Thread(target=ping_target, args=(t,count,delay,))
+             th = threading.Thread(target=ping_probe, args=(t,count,delay,))
              threads.append(th)
              th.start()
 
     for th in threads:
         th.join()
 
-    jtargets = []
-    for t in targets:
+    jprobes = []
+    for t in probes:
         if name != t.name:
-            jtargets.append(t.to_dict())
+            jprobes.append(t.to_dict())
 
     jresult = {
         "source": name,
-        "targets": jtargets
+        "probes": jprobes
     }
 
-    response = requests.post(f"https://{remote}/backend/api/v1/result",
+    response = requests.post(f"https://{remote}/backend/api/v1/data/probe-result",
                              json=jresult,
                              headers={ 'X-API-Key': key })
     if response.status_code == 200:
