@@ -65,8 +65,7 @@ class Probe:
                 if ms < min:
                     min = ms
                 sum += ms
-
-        packet_loss = float(lost)/float(count) * 100.0
+        packet_loss = float(lost)/float(count)
         avg = sum/float(count)
         self._ping_min = min
         self._ping_max = max
@@ -100,14 +99,14 @@ def ping_probe(probe, count, delay):
 def load_probes_from_server(remote, api_key):
     result = []
     url = requests.get(f"https://{remote}/backend/api/v1/conf/probes",
-                       headers = { "X-API-Key": api_key })
+                   headers = { "X-API-Key": api_key })
     data = json.loads(url.text)
     for t in data['probes']:
         result.append(Probe.make_from_json(t))
     return result
 
 def usage():
-    print("Usage: utils -n name -k key -r address [-d delay] [-c count]")
+    print("Usage: xprobe -n name -k key -r address [-d delay] [-c count]")
 
 def main():
     try:
@@ -115,7 +114,7 @@ def main():
 
         (key, name, remote) = ("", None, None)
         count = 10
-        delay = 50.0
+        delay = 500.0
         for o, a in opts:
             if o in ("-c", "--count"):
                 count = int(a)
@@ -137,12 +136,18 @@ def main():
             assert False, "mandatory utils name missing"
 
     except Exception as err:
-        print(err)
+        print(err, file=sys.stderr)
         usage()
         sys.exit(2)
 
-    probes = load_probes_from_server(remote, key)
+    try:
+        probes = load_probes_from_server(remote, key)
+    except Exception as e:
+        print(f"error while getting probes: {e}", file=sys.stderr)
+        sys.exit(2)
+
     threads = []
+    
     for t in probes:
          if name != t.name:
              th = threading.Thread(target=ping_probe, args=(t,count,delay,))
