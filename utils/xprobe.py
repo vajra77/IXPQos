@@ -161,6 +161,7 @@ def main():
         "targets": jtargets
     }
 
+
     response = requests.post(f"https://{remote}/api/v1/result", json=jresult)
     if response.status_code == 200:
         exit(0)
