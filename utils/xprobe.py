@@ -2,7 +2,7 @@ import requests, json, threading, time, sys, getopt
 from ping3 import ping
 
 
-DEFAULT_DELAY = 500.00 # milliseconds
+DEFAULT_DELAY = 1000.00 # milliseconds
 DEFAULT_COUNT = 10
 
 # Helper class
