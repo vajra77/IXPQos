@@ -2,6 +2,9 @@ import requests, json, threading, time, sys, getopt
 from ping3 import ping
 
 
+DEFAULT_DELAY = 500.00 # milliseconds
+DEFAULT_COUNT = 10
+
 # Helper class
 class Probe:
 
@@ -48,15 +51,16 @@ class Probe:
         return self._ping_loss
 
     def ping(self, count, delay):
-        rtt = [None]*count
-        for i in range(count):
+        rtt = [None]*(count + 1)
+        for i in range(count + 1):
             rtt[i] = ping(self._address, unit="ms")
             time.sleep(delay/1000.0)
 
-        # check for packet loss
+        # we clean up the first ping which is usually an outlier
+        clean_rtt = rtt[1:count+1]
         lost = 0
         (min, max, sum) = (100000.0, .0, .0)
-        for ms in rtt:
+        for ms in clean_rtt:
             if not ms:
                 lost += 1
             else:
@@ -65,12 +69,10 @@ class Probe:
                 if ms < min:
                     min = ms
                 sum += ms
-        packet_loss = float(lost)/float(count)
-        avg = sum/float(count)
         self._ping_min = min
         self._ping_max = max
-        self._ping_avg = avg
-        self._ping_loss = packet_loss
+        self._ping_avg = sum/float(count)
+        self._ping_loss = float(lost)/float(count) 
         self._pinged = True
 
     def to_dict(self):
@@ -113,8 +115,8 @@ def main():
         opts, args = getopt.getopt(sys.argv[1:], "k:n:r:c:d:", ["key=", "name=", "remote=", "count=", "delay="])
 
         (key, name, remote) = ("", None, None)
-        count = 10
-        delay = 500.0
+        count = DEFAULT_COUNT
+        delay = DEFAULT_DELAY
         for o, a in opts:
             if o in ("-c", "--count"):
                 count = int(a)
