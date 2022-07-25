@@ -2,14 +2,15 @@
 
 class ProbeResult:
 
-    def __init__(self, name, proto, address, status, min, max, avg, loss, timestamp):
+    def __init__(self, name, proto, address, status, pmin, pmax, avg, jitter, loss, timestamp):
         self._name = name
         self._proto = proto
         self._address = address
         self._status = status
-        self._ping_min = min
-        self._ping_max = max
+        self._ping_min = pmin
+        self._ping_max = pmax
         self._ping_avg = avg
+        self._ping_jitter = jitter
         self._ping_loss = loss
         self._timestamp = timestamp
 
@@ -44,6 +45,10 @@ class ProbeResult:
     @property
     def ping_avg(self):
         return self._ping_avg
+
+    @property
+    def ping_jitter(self):
+        return self._ping_jitter
 
     @property
     def ping_loss(self):

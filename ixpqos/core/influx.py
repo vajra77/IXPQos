@@ -21,6 +21,7 @@ class InfluxRepo:
                 "min": result.ping_min,
                 "max": result.ping_max,
                 "avg": result.ping_avg,
+                "jitter": result.ping_jitter,
                 "loss": result.ping_loss
             }
         }

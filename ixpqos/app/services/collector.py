@@ -17,8 +17,8 @@ class CollectorSrv:
     def store_result(cls, source, probes):
         timestamp = datetime.now()
         db = InfluxRepo(APP_CONFIG['dbhost'],
-                      APP_CONFIG['dbport'],
-                      APP_CONFIG['dbname'],
+                        APP_CONFIG['dbport'],
+                        APP_CONFIG['dbname'],
                         APP_CONFIG['dbuser'],
                         APP_CONFIG['dbpass'])
         for t in probes:
@@ -30,6 +30,7 @@ class CollectorSrv:
                 t['ping_min'],
                 t['ping_max'],
                 t['ping_avg'],
+                t['ping_jitter'],
                 t['ping_loss'],
                 timestamp
             )
