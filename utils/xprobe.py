@@ -56,13 +56,13 @@ class Probe:
         return self._ping_loss
 
     def ping(self, count, delay):
-        rtt = [None]*(count + 2)
-        for i in range(count + 2):
+        rtt = [None]*(count + 1)
+        for i in range(count + 1):
             rtt[i] = ping(self._address, unit="ms")
             time.sleep(delay/1000.0)
 
-        # we clean up the first two pings which are usually outliers
-        clean_rtt = rtt[2:count+2]
+        # we clean up the first ping which is usually an outlier
+        clean_rtt = rtt[1:count+1]
         lost = 0
         (min, max, sum, avg, sdev) = (100000.0, .0, .0, .0, .0)
         for ms in clean_rtt:
@@ -83,7 +83,7 @@ class Probe:
         self._ping_avg = avg
         self._ping_jitter = jitter
         self._ping_loss = float(lost)/float(count)
-    self._pinged = True
+        self._pinged = True
 
     def to_dict(self):
         result = {
