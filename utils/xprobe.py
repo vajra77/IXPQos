@@ -9,7 +9,7 @@ from ping3 import ping
 
 
 DEFAULT_DELAY = 1000.00  # milliseconds
-DEFAULT_COUNT = 20
+DEFAULT_COUNT = 10
 
 
 # Helper class
@@ -81,7 +81,7 @@ class Probe:
                 if ms < pmin:
                     pmin = ms
                 psum += ms
-        pavg = psum/float(count)
+        pavg = psum/float(count - plost)
         for ms in clean_rtt:
             psdev += (ms - pavg) ** 2
         pjit = math.sqrt(psdev/float(count))
