@@ -1,9 +1,16 @@
-import requests, json, threading, time, sys, getopt, math
+import requests
+import json
+import threading
+import time
+import sys
+import getopt
+import math
 from ping3 import ping
 
 
-DEFAULT_DELAY = 1000.00 # milliseconds
+DEFAULT_DELAY = 1000.00  # milliseconds
 DEFAULT_COUNT = 20
+
 
 # Helper class
 class Probe:
@@ -56,33 +63,33 @@ class Probe:
         return self._ping_loss
 
     def ping(self, count, delay):
-        rtt = [None]*(count + 1)
+        rtt = []
         for i in range(count + 1):
-            rtt[i] = ping(self._address, unit="ms")
+            rtt.append(ping(self._address, unit="ms"))
             time.sleep(delay/1000.0)
 
         # we clean up the first ping which is usually an outlier
         clean_rtt = rtt[1:count+1]
-        lost = 0
-        (min, max, sum, avg, sdev) = (100000.0, .0, .0, .0, .0)
+        plost = 0
+        (pmin, pmax, psum, pavg, psdev) = (100000.0, .0, .0, .0, .0)
         for ms in clean_rtt:
             if not ms:
-                lost += 1
+                plost += 1
             else:
-                if ms > max:
-                    max = ms
-                if ms < min:
-                    min = ms
-                sum += ms
-        avg = sum/float(count)
+                if ms > pmax:
+                    pmax = ms
+                if ms < pmin:
+                    pmin = ms
+                psum += ms
+        pavg = psum/float(count)
         for ms in clean_rtt:
-            sdev += (ms - avg) ** 2
-        jitter = math.sqrt(sdev/float(count))
-        self._ping_min = min
-        self._ping_max = max
-        self._ping_avg = avg
-        self._ping_jitter = jitter
-        self._ping_loss = float(lost)/float(count)
+            psdev += (ms - pavg) ** 2
+        pjit = math.sqrt(psdev/float(count))
+        self._ping_min = pmin
+        self._ping_max = pmax
+        self._ping_avg = pavg
+        self._ping_jitter = pjit
+        self._ping_loss = float(plost)/float(count)
         self._pinged = True
 
     def to_dict(self):
@@ -105,21 +112,24 @@ class Probe:
                    jdata['proto'],
                    jdata['address'])
 
+
 # APP FUNCTIONS
 def ping_probe(probe, count, delay):
     probe.ping(count, delay)
 
+
 def load_probes_from_server(remote, api_key):
     result = []
-    url = requests.get(f"https://{remote}/backend/api/v1/conf/probes",
-                   headers = { "X-API-Key": api_key })
+    url = requests.get(f"https://{remote}/backend/api/v1/conf/probes", headers={"X-API-Key": api_key})
     data = json.loads(url.text)
     for t in data['probes']:
         result.append(Probe.make_from_json(t))
     return result
 
+
 def usage():
     print("Usage: xprobe -n name -k key -r address [-d delay] [-c count]")
+
 
 def main():
     try:
@@ -162,10 +172,10 @@ def main():
     threads = []
     
     for t in probes:
-         if name != t.name:
-             th = threading.Thread(target=ping_probe, args=(t,count,delay,))
-             threads.append(th)
-             th.start()
+        if name != t.name:
+            th = threading.Thread(target=ping_probe, args=(t, count, delay,))
+            threads.append(th)
+            th.start()
 
     for th in threads:
         th.join()
@@ -182,13 +192,14 @@ def main():
 
     response = requests.post(f"https://{remote}/backend/api/v1/data/probe-result",
                              json=jresult,
-                             headers={ 'X-API-Key': key })
+                             headers={'X-API-Key': key})
     if response.status_code == 200:
         exit(0)
     else:
         data = response.json()
         print(f"ERROR: {data['error']}", file=sys.stderr)
         exit(1)
+
 
 if __name__ == '__main__':
     main()
