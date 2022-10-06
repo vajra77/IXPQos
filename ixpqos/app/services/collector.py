@@ -16,11 +16,9 @@ class CollectorSrv:
     @classmethod
     def store_result(cls, source, probes):
         timestamp = datetime.now()
-        db = InfluxRepo(APP_CONFIG['dbhost'],
-                        APP_CONFIG['dbport'],
-                        APP_CONFIG['dbname'],
-                        APP_CONFIG['dbuser'],
-                        APP_CONFIG['dbpass'])
+        db = InfluxRepo(APP_CONFIG['url'],
+                        APP_CONFIG['token'],
+                        APP_CONFIG['org'])
         for t in probes:
             result = ProbeResult(
                 t['name'],
@@ -34,5 +32,5 @@ class CollectorSrv:
                 t['ping_loss'],
                 timestamp
             )
-            db.store_point(source, result)
+            db.store_point(APP_CONFIG['bucket'], APP_CONFIG['org'], source, result)
         db.close()
