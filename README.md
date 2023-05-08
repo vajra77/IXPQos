@@ -64,7 +64,7 @@ server {
 }
 ```
 ### Server configuration
-You need to craft your custom configuration file `config.py` to directory `ixpqos/app`:
+You will need to craft your own application configuration file `config.py` and add it to directory `ixpqos/app`:
 
 **config.py**
 ``` 
