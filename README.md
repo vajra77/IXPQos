@@ -9,10 +9,10 @@ For a general overview of the framework please read the article on [Namex IXP bl
 ### Requirements
 The framework relies ont the `ping3` Python package. API server requires a working uWSGI/NGINX setup (see below), data backend is provided by InfluxDB2 with proper authentication mechanisms in place.
 
-### Server side
+### Server host setup
 In order to configure uWSGI you need the following file added to the base directory, a reference example will be given here:
 
-**ixpqos.in**
+**ixpqos.ini**
 ```
 [uwsgi]
 module = wsgi:app
@@ -62,6 +62,48 @@ server {
                 include uwsgi_params;
         }
 }
+```
+### Server configuration
+You need to craft your custom configuration file `config.py` to directory `ixpqos/app`:
+
+**config.py**
+``` 
+APP_CONFIG = {
+    "apikey": YOUR_API_KEY,
+    "bucket": YOUR_INFLUXDB2_BUCKET,
+    "org": YOUR_INFLUXDB2_ORG,
+    "token": YOUR_INFLUXDB_TOKEN,
+    "url": "http://localhost:8086",
+    "logfile": YOUR_LOG_FILE_PATH,
+    "probes": "/etc/ixpqos/probes.json",
+    "schedule": "/etc/ixpqos/schedule.json"
+}
+``` 
+
+After creating configuration directory `/etc/ixpqos`, write down file `/etc/ixpqos/probes.json`, which should list all active probes in the system as in here:
+
+***probes.json***
+```
+{
+  "probes": [
+    {
+      "name": "p1-ixpqos",
+      "proto": 4,
+      "address": "10.0.0.1"
+    },
+    {
+      "name": "p2-ixpqos",
+      "proto": 4,
+      "address": "10.0.0.2"
+    },
+    {
+      "name": "p3-ixpqos",
+      "proto": 4,
+      "address": "10.0.0.3"
+    }
+  ]
+}
+```
 
 
 ### Client side
