@@ -1,0 +1,6 @@
+# Packages to be installed in virtual environment
+ping3
+influxdb_client
+flask
+requests
+uwsgi

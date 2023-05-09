@@ -1,16 +1,31 @@
 # IXPQos
-IXP Qos Monitoring Framework. 
+A simple Qos Monitoring Framework for geographically distributed IXP platforms. 
 
 ## Overview
 For a general overview of the framework please read the article on [Namex IXP blog](https://www.namex.it/assessing-performance-and-qos-of-a-distributed-peering-platform/)
 
 ## Setup
 
-### Requirements
-The framework relies ont the `ping3` Python package. API server requires a working uWSGI/NGINX setup (see below), data backend is provided by InfluxDB2 with proper authentication mechanisms in place.
+### Platform setup
+In our setup, a dedicated VLAN is defined over the peering platform, in order to keep probe traffic segregated and not to waste public IP addresses. Probes are distributed at data centre sites and connected to the monitoring VLAN. The collector server is also connected to the VLAN and exposes its services via HTTP/REST.
+
+### Software requirements
+The framework relies on the following Python packages, suggestion is to setup a virtual environment and install them accordingly :
+
+- ping3
+- flask
+- uwsgi
+- influxdb_client
+- requests 
+
+After setting up the environment you can install the required packages by running:
+```commandline
+pip install -r requirements.txt
+```
+You will also need a working installation of InfluxDB2, with an organization, bucket and authentication token setup on purpose. Restful API requests are managed by a web server (NGINX in our case) and proxied to uWSGI, see the following section for details.
 
 ### Server host setup
-In order to configure uWSGI you need the following file added to the base directory, a reference example will be given here:
+In order to configure uWSGI you need the following file added to the base directory (ex. `/srv/IXPQos`), a reference example will be given here:
 
 **ixpqos.ini**
 ```
@@ -26,6 +41,7 @@ plugins = python3
 
 die-on-term = true
 ```
+In the same directory, add the following:
 
 **wsgi.py**
 ```
@@ -36,7 +52,7 @@ if __name__ == "__main__":
     app.run()
 ```
 
-Next, you will need to configure NGINX to proxy requests to uWSGI:
+Next, you will need to configure NGINX to proxy requests to uWSGI, as in this example:
 
 ```
 server {
@@ -63,15 +79,15 @@ server {
         }
 }
 ```
-### Server configuration
+### IXPQos server configuration
 You will need to craft your own application configuration file `config.py` and add it to directory `ixpqos/app`:
 
 **config.py**
 ``` 
 APP_CONFIG = {
     "apikey": YOUR_API_KEY,
-    "bucket": YOUR_INFLUXDB2_BUCKET,
-    "org": YOUR_INFLUXDB2_ORG,
+    "bucket": YOUR_INFLUXDB_BUCKET,
+    "org": YOUR_INFLUXDB_ORG,
     "token": YOUR_INFLUXDB_TOKEN,
     "url": "http://localhost:8086",
     "logfile": YOUR_LOG_FILE_PATH,
@@ -79,8 +95,7 @@ APP_CONFIG = {
     "schedule": "/etc/ixpqos/schedule.json"
 }
 ``` 
-
-After creating configuration directory `/etc/ixpqos`, write down file `/etc/ixpqos/probes.json`, which should list all active probes in the system as in here:
+NOTE: the schedule mechanism is not supported yet. After creating configuration directory `/etc/ixpqos`, write down file `/etc/ixpqos/probes.json`, which should list all active probes in the system as in here:
 
 ***probes.json***
 ```
@@ -105,6 +120,14 @@ After creating configuration directory `/etc/ixpqos`, write down file `/etc/ixpq
 }
 ```
 
-
 ### Client side
+On client machine, you just need a running python environment with `ping3` package installed. You will schedule the **xprobe** util to run every five minutes (or according to your preferences) as in the following crontab line:
+```
+*/5 * * * * /srv/IXPQos/venv/bin/python3 /srv/IXPQos/utils/xprobe.py -k YOUR_API_KEY -n YOUR_PROBE_NAME -r YOUR_SERVER_NAME
+```
 
+## Operations
+As soon as everything is in place, data collected from probes will be stored into the InfluxDB bucket, applications can be instructed to extract data and performs desired tasks as described in the [blog article](https://www.namex.it/assessing-performance-and-qos-of-a-distributed-peering-platform/).
+
+## Support
+This tool is provided as-is and without warranty as to its features, functionality, performance or integrity. The tool is currently operational at [Namex Roma IXP](https://www.namex.it), feel free to contact me if you want to give it a try and need help to setup the framework.
