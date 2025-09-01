@@ -32,5 +32,16 @@ class CollectorSrv:
                 t['ping_loss'],
                 timestamp
             )
-            db.store_point(APP_CONFIG['bucket'], APP_CONFIG['org'], source, result)
+            db.store_point(APP_CONFIG['bucket'], source, result)
         db.close()
+
+
+    @classmethod
+    def get_last(cls, source, target):
+        db = InfluxRepo(APP_CONFIG['url'],
+                        APP_CONFIG['token'],
+                        APP_CONFIG['org'])
+
+        result = db.retrieve_point(APP_CONFIG['bucket'], source, target)
+        return result
+

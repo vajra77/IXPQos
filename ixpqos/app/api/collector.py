@@ -7,7 +7,7 @@ from flask import jsonify, request
 
 @api.route('/conf/probes', methods=['GET'])
 @api_auth
-def API_list_probes():
+def api_list_probes():
     try:
         probes = SRV.list_probes()
     except Exception as e:
@@ -19,7 +19,7 @@ def API_list_probes():
 
 @api.route('/data/probe-result', methods=['POST'])
 @api_auth
-def API_store_result():
+def api_store_result():
     try:
         data = request.json
         source = data['source']
@@ -31,13 +31,19 @@ def API_store_result():
     else:
         return jsonify({'status': 'ok'}), 200
 
-@api.route('/data/probe/:sid/last', methods=['GET'])
+
+@api.route('/data/last', methods=['GET'])
 @api_auth
-def API_get_last(tid):
+def api_get_last():
     try:
-        result = SRV.get_last(sid)
+        source = request.args.get('source')
+        target = request.args.get('target')
+
+        result = SRV.get_last(source, target)
+
     except Exception as e:
         Logger.crit(__name__ + ' : ' + str(e))
-        return jsonify({"error": "unable to retrieve probe"}), 404
+        return jsonify({"error": "unable to retrieve point"}), 404
     else:
         return jsonify({ "result": result })
+
