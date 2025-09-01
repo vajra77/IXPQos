@@ -36,8 +36,8 @@ def api_store_result():
 @api_auth
 def api_get_last():
     try:
-        source = request.args.get('source')
-        target = request.args.get('target')
+        source = request.args.get('src')
+        target = request.args.get('tgt')
 
         result = SRV.get_last(source, target)
 
