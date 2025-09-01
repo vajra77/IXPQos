@@ -31,9 +31,12 @@ class InfluxRepo:
             |> filter(fn:(r) => r.source == \"{source}\")\
             |> filter(fn:(r) => r.target == \"{target}\")\
             |> last()"
-
         result = self._query_api.query(org=self._org, query=query_str)
-        return result
+        point = {}
+        for table in result:
+            for record in table.records:
+                point[record.get_field()] = record.get_value()
+        return point
 
 
     def close(self):
